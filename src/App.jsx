@@ -20,6 +20,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
+  const API_BASE_URL = 'https://nuclei-segmentation-ai-f7f3adfgb6ethuby.canadacentral-01.azurewebsites.net';
 
   const handleImageSelect = (imageName) => {
     setSelectedImage(imageName)
@@ -38,7 +39,7 @@ function App() {
     setResult(null)
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/segment', {
+      const response = await fetch(`${API_BASE_URL}/api/segment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -166,7 +167,7 @@ function App() {
               <div className="result-image-container">
                 <h3>🖼️ Imagem Segmentada</h3>
                 <img
-                  src={`http://127.0.0.1:5000${result.result_image_url}`}
+                  src={`${API_BASE_URL}${result.result_image_url}`}
                   alt="Resultado da segmentação"
                   className="result-image"
                 />
@@ -174,7 +175,7 @@ function App() {
               <div className="result-image-container">
                 <h3>📈 Histograma</h3>
                 <img
-                  src={`http://127.0.0.1:5000${result.histogram_url}`}
+                  src={`${API_BASE_URL}${result.histogram_url}`}
                   alt="Histograma"
                   className="result-image"
                 />
