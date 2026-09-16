@@ -891,3 +891,241 @@ body {
 }
 
 
+/* Institutional dark theme */
+:root {
+  --surface-0: #10161b;
+  --surface-1: #172027;
+  --surface-2: #1d2931;
+  --surface-3: #24323b;
+  --line: rgba(196, 213, 220, 0.14);
+  --line-strong: rgba(196, 213, 220, 0.26);
+  --text: #e8edf2;
+  --muted: #96a8b2;
+  --accent: #89a9b7;
+  --accent-strong: #b6cbd2;
+  --success: #9bbba9;
+  --warning: #c5a578;
+  --danger: #d59a9a;
+}
+
+body {
+  background: var(--surface-0);
+  color: var(--text);
+  font-family: 'Avenir Next', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.app-container {
+  max-width: 1240px;
+}
+
+.header,
+.image-selection,
+.loading-container,
+.results-section {
+  background: var(--surface-1);
+  border-color: var(--line);
+  border-radius: 10px;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
+}
+
+.header {
+  padding-top: 1.25rem;
+}
+
+.header-top-bar {
+  border-color: var(--line);
+}
+
+.header-badge {
+  color: var(--success);
+  background: rgba(155, 187, 169, 0.1);
+  border-color: rgba(155, 187, 169, 0.28);
+  border-radius: 5px;
+}
+
+.logout-btn {
+  color: var(--danger);
+  background: rgba(213, 154, 154, 0.08);
+  border-color: rgba(213, 154, 154, 0.25);
+  border-radius: 5px;
+}
+
+.logout-btn:hover {
+  background: rgba(213, 154, 154, 0.16);
+  border-color: var(--danger);
+}
+
+.header h1,
+.login-header h2 {
+  background: none;
+  color: var(--text);
+  -webkit-text-fill-color: currentColor;
+}
+
+.subtitle,
+.selected-info,
+.loading-hint,
+.footer {
+  color: var(--muted);
+}
+
+.image-selection h2,
+.results-section h2,
+.statistics-grid h3,
+.result-image-container h3,
+.results-title-bar h2 {
+  color: var(--text);
+}
+
+.tab-navigation {
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.75rem;
+}
+
+.tab-btn,
+.image-btn,
+.stat-card,
+.download-btn {
+  background: var(--surface-2);
+  border-color: var(--line);
+}
+
+.tab-btn {
+  border-radius: 6px;
+  color: var(--muted);
+}
+
+.tab-btn:hover,
+.image-btn:hover:not(:disabled),
+.download-btn:hover {
+  background: var(--surface-3);
+  border-color: var(--line-strong);
+  color: var(--text);
+}
+
+.tab-btn.active {
+  color: var(--text);
+  background: var(--surface-3);
+  border-color: var(--accent);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.image-btn {
+  border-width: 1px;
+  border-radius: 8px;
+}
+
+.image-btn.selected {
+  background: var(--surface-3);
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent), 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+.selected-info strong,
+.upload-main-text strong,
+.stat-value {
+  color: var(--accent-strong);
+}
+
+.submit-btn,
+.login-submit-btn {
+  background: var(--accent);
+  color: #102027;
+  border-radius: 6px;
+  box-shadow: 0 8px 20px rgba(50, 75, 86, 0.28);
+}
+
+.submit-btn:hover:not(:disabled),
+.login-submit-btn:hover:not(:disabled) {
+  background: var(--accent-strong);
+  box-shadow: 0 10px 24px rgba(50, 75, 86, 0.38);
+  filter: none;
+}
+
+.spinner {
+  border-top-color: var(--accent);
+}
+
+.nuclei-count,
+.image-analyzed {
+  background: var(--surface-2);
+  border-color: var(--line-strong);
+  border-radius: 8px;
+}
+
+.count-value {
+  background: none;
+  color: var(--accent-strong);
+  -webkit-text-fill-color: currentColor;
+}
+
+.dropzone {
+  background: rgba(16, 22, 27, 0.35);
+  border-color: var(--line-strong);
+  border-radius: 8px;
+}
+
+.dropzone:hover,
+.dropzone.has-file {
+  border-color: var(--accent);
+  background: rgba(137, 169, 183, 0.07);
+}
+
+.dropzone.dragging {
+  border-color: var(--warning);
+  background: rgba(197, 165, 120, 0.08);
+}
+
+.upload-main-text,
+.file-name {
+  color: var(--text);
+}
+
+.upload-icon,
+.file-icon {
+  filter: grayscale(0.65);
+}
+
+.download-btn.csv-btn {
+  background: rgba(155, 187, 169, 0.1);
+  border-color: rgba(155, 187, 169, 0.3);
+  color: var(--success);
+}
+
+.download-btn.csv-btn:hover {
+  background: rgba(155, 187, 169, 0.18);
+  box-shadow: none;
+}
+
+.login-card {
+  background: var(--surface-1);
+  border-color: var(--line);
+  border-radius: 12px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
+}
+
+.login-badge {
+  color: var(--accent-strong);
+  background: rgba(137, 169, 183, 0.1);
+  border-color: rgba(137, 169, 183, 0.28);
+  border-radius: 5px;
+}
+
+.password-input-container input {
+  background: var(--surface-0);
+  border-color: var(--line-strong);
+  border-radius: 6px;
+}
+
+.password-input-container input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(137, 169, 183, 0.12);
+  background: var(--surface-0);
+}
+
+.footer {
+  border-color: var(--line);
+}
+
+
