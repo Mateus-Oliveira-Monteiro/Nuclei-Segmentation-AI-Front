@@ -1,121 +1,238 @@
-# Nuclei-Segmentation AI Frontend
+# Nuclei Segmentation AI - Frontend
 
-Interface web em React para selecionar imagens predefinidas e solicitar a segmentacao de nucleos via API, exibindo estatisticas e imagens resultantes.
+Aplicacao web em React para autenticar usuarios, selecionar imagens de microscopia ou enviar arquivos, solicitar a segmentacao ao backend e visualizar os resultados morfometricos.
 
 ## Visao geral
 
-Este projeto entrega uma UI simples e responsiva para:
+O frontend e uma SPA criada com Vite e React 19. Ele nao executa o modelo de inteligencia artificial no navegador. Seu papel e oferecer a interface e consumir a API Flask do backend.
 
-- Selecionar uma imagem de amostra (previews em PNG).
-- Enviar o nome da imagem para uma API de segmentacao.
-- Apresentar resultados numericos e imagens geradas pelo backend.
+O usuario pode:
 
-Ele foi criado com Vite + React 19, com foco em uma experiencia direta e visualmente clara.
+- entrar usando a credencial configurada no ambiente do backend;
+- selecionar uma imagem predefinida;
+- enviar TIFF, PNG ou JPEG de ate 50 MB;
+- acompanhar o processamento;
+- visualizar a contagem de nucleos, estatisticas, overlay e histograma;
+- baixar o CSV, a imagem segmentada e o histograma.
 
-## Fluxo do usuario
+## Arquitetura e fluxo
 
-1. O usuario escolhe uma das imagens predefinidas (Campo 1, Campo 2, Campo 3, Campo 3R).
-2. A interface envia um POST para a API com o campo `image_name`.
-3. O frontend mostra estado de carregamento.
-4. Ao retornar sucesso, a UI exibe:
-	 - Quantidade de nucleos detectados.
-	 - Estatisticas de area e morfologia.
-	 - Imagem segmentada e histograma.
-5. Em caso de erro, a UI exibe uma mensagem amigavel.
+```text
+Navegador
+	|
+	| login e token Bearer
+	v
+Frontend React + Vite
+	|
+	| POST /api/segment ou /api/upload-and-segment
+	v
+Backend Flask + StarDist
+	|
+	| overlay, histograma, CSV e estatisticas
+	v
+Azure Blob Storage ou armazenamento local do backend
+```
 
-## Funcionalidades principais
+### Inicializacao
 
-- Selecao de imagens predefinidas com preview.
-- Envio para analise via API REST.
-- Estados de carregamento, erro e resultado.
-- Exibicao de estatisticas com cards.
-- Renderizacao das imagens resultantes geradas pelo backend.
+1. `main.jsx` monta o componente `App`.
+2. `App` procura um token de sessao salvo no `localStorage`.
+3. Quando existe token, o frontend chama `GET /api/verify-token`.
+4. Token invalido ou expirado remove a sessao e exibe a tela de login.
+5. Token valido libera o painel de analise.
+
+### Analise de imagem predefinida
+
+1. O usuario escolhe uma amostra.
+2. O frontend envia `image_name` para `POST /api/segment`.
+3. O backend carrega o TIFF cadastrado e executa a inferencia StarDist.
+4. O frontend renderiza os dados retornados e monta as URLs dos resultados.
+
+### Upload de arquivo
+
+1. O usuario seleciona ou arrasta um arquivo para a area de upload.
+2. O componente valida extensao e tamanho antes do envio.
+3. O frontend envia o arquivo no campo multipart `file` para `POST /api/upload-and-segment`.
+4. O backend processa o arquivo temporario e retorna os mesmos tipos de resultado.
+
+## Autenticacao no frontend
+
+O frontend nao contem senha, connection string ou chave privada. A credencial e validada exclusivamente pelo backend.
+
+Depois do login, o token retornado e salvo em `localStorage` com a chave `nuclei_auth_token` e enviado assim:
+
+```text
+Authorization: Bearer <TOKEN_DE_SESSAO>
+```
+
+O token deve ser tratado como dado sensivel. Nao o inclua em screenshots, logs, issues, commits ou documentacao.
+
+## Configuracao da API
+
+Crie um arquivo `.env` local a partir de `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+Configure apenas a URL publica do backend:
+
+```text
+VITE_API_BASE_URL=http://localhost:5000
+```
+
+Para producao, use a URL do App Service ou gateway do backend. O valor e incorporado no bundle durante o build, portanto nao coloque nessa variavel nenhum segredo.
+
+O Vite disponibiliza ao frontend somente variaveis iniciadas por `VITE_`. Chaves de Azure, senhas, tokens de longa duracao e connection strings nunca devem ser adicionados a esse arquivo.
 
 ## Estrutura do projeto
 
-```
+```text
 .
-├─ index.html
-├─ package.json
-├─ vite.config.js
-├─ eslint.config.js
-├─ public/
-└─ src/
-	 ├─ main.jsx
-	 ├─ App.jsx
-	 ├─ App.css
-	 ├─ index.css
-	 └─ assets/
-			└─ images/
-				 └─ tiff images/
-						├─ Campo 1.png
-						├─ Campo 2.png
-						├─ Campo 3.png
-						└─ Campo 3R.png
+├── index.html                 # Documento HTML inicial
+├── package.json               # Dependencias e scripts
+├── vite.config.js             # Configuracao do Vite
+├── eslint.config.js           # Regras do ESLint
+├── .env.example               # Exemplo sem segredos
+├── public/                    # Arquivos publicos estaticos
+└── src/
+	 ├── main.jsx               # Entrada da aplicacao
+	 ├── App.jsx                # Estado, autenticacao, chamadas e resultados
+	 ├── App.css                # Layout, componentes e tema visual
+	 ├── index.css              # Reset e estilos globais
+	 ├── components/
+	 │   ├── Login.jsx          # Formulario de autenticacao
+	 │   └── ImageUpload.jsx     # Upload, drag-and-drop e validacao
+	 └── assets/images/
+		  └── tiff images/       # Previews PNG das imagens predefinidas
 ```
 
-### Responsabilidades por arquivo
+## Estado da aplicacao
 
-- `src/main.jsx`: ponto de entrada, monta o React no DOM e carrega `index.css`.
-- `src/App.jsx`: componente principal; controla estado da selecao, chamada a API e renderizacao dos resultados.
-- `src/App.css`: estilos visuais do layout, cards, botoes, loading, resultados e responsividade.
-- `src/index.css`: estilos base do template Vite (root, tipografia, botoes).
-- `src/assets/images/tiff images/`: previews PNG usados nos botoes de selecao.
+`App.jsx` controla:
 
-## Integracao com a API
+- `authToken`: token atual da sessao;
+- `activeTab`: modo de imagem predefinida ou upload;
+- `selectedPreset`: imagem cadastrada selecionada;
+- `uploadedFile`: arquivo escolhido pelo usuario;
+- `isLoading`: bloqueia a interface durante a requisicao;
+- `result`: resposta de sucesso da API;
+- `error`: mensagem apresentada quando a requisicao falha.
 
-- Base URL atual (fixa no codigo):
-	- `https://nuclei-segmentation-ai-f7f3adfgb6ethuby.canadacentral-01.azurewebsites.net`
+O componente `ImageUpload` tambem valida:
 
-- Endpoint usado:
-	- `POST /api/segment`
+- extensoes `.tif`, `.tiff`, `.png`, `.jpg` e `.jpeg`;
+- tamanho maximo de 50 MB;
+- selecao por dialogo ou arrastar e soltar;
+- remocao do arquivo antes do processamento.
 
-- Payload enviado:
-	- `{ "image_name": "Campo 1" }` (o valor e o nome selecionado na UI)
+## Contrato consumido da API
 
-- Resposta esperada (formato utilizado na UI):
-	- `success`: boolean
-	- `nuclei_count`: numero de nucleos detectados
-	- `image_name`: identificador da imagem analisada
-	- `statistics`: objeto com
-		- `mean_area`, `median_area`, `min_area`, `max_area`, `std_area`
-		- `mean_diameter`, `mean_solidity`
-	- `result_image_url`: caminho da imagem segmentada
-	- `histogram_url`: caminho do histograma
+### Login
 
-As imagens retornadas sao renderizadas concatenando a base URL com os caminhos fornecidos pela API.
+`POST /api/login` recebe a credencial digitada pelo usuario e retorna um token. O frontend nao conhece nem documenta o valor dessa credencial.
 
-## Estilo e UI
+### Imagem predefinida
 
-- Tema escuro com gradiente no fundo e cards translucidos.
-- Botao selecionado recebe destaque visual com gradiente.
-- Loading com spinner animado.
-- Responsividade para telas menores via media query.
+```http
+POST /api/segment
+Authorization: Bearer <TOKEN_DE_SESSAO>
+Content-Type: application/json
+```
+
+```json
+{"image_name": "Campo 1"}
+```
+
+### Upload
+
+```http
+POST /api/upload-and-segment
+Authorization: Bearer <TOKEN_DE_SESSAO>
+Content-Type: multipart/form-data
+```
+
+Campo enviado: `file`.
+
+### Resposta usada na interface
+
+```json
+{
+  "success": true,
+  "image_name": "Campo 1",
+  "nuclei_count": 223,
+  "statistics": {
+	 "mean_area": 0,
+	 "median_area": 0,
+	 "min_area": 0,
+	 "max_area": 0,
+	 "std_area": 0,
+	 "mean_diameter": 0,
+	 "mean_solidity": 0
+  },
+  "result_image_url": "<URL_DO_OVERLAY>",
+  "histogram_url": "<URL_DO_HISTOGRAMA>",
+  "csv_download_url": "<URL_DO_CSV>",
+  "nuclei_data": []
+}
+```
+
+Quando a API retorna um caminho relativo, `App.jsx` o combina com `VITE_API_BASE_URL`. URLs absolutas sao usadas diretamente.
+
+## Tema e experiencia visual
+
+O tema atual usa superficies escuras grafite, azul ardosia para acoes principais, verde suave para estados positivos e cobre discreto para atencao. O layout foi mantido responsivo para telas menores, com estados visuais para:
+
+- login e sessao autenticada;
+- abas e selecao de amostras;
+- drag-and-drop;
+- processamento em andamento;
+- erro de validacao ou comunicacao;
+- resultados e downloads.
+
+## Desenvolvimento local
+
+Requisitos: Node.js compativel com Vite 6.
+
+```bash
+npm install
+npm run dev
+```
+
+Abra a URL indicada pelo Vite. O backend tambem precisa estar executando e ser acessivel pela URL configurada em `VITE_API_BASE_URL`.
 
 ## Scripts
 
-- `npm run dev`: inicia o servidor de desenvolvimento.
-- `npm run build`: gera build de producao.
-- `npm run preview`: serve o build localmente.
-- `npm run lint`: roda o ESLint.
+| Comando | Finalidade |
+| --- | --- |
+| `npm run dev` | Inicia o servidor de desenvolvimento com hot reload. |
+| `npm run build` | Gera o bundle de producao em `dist/`. |
+| `npm run preview` | Serve localmente o bundle de producao. |
+| `npm run lint` | Executa o ESLint. |
 
-## Como rodar localmente
+## Deploy no Azure Static Web Apps
 
-1. Instale as dependencias:
-	 - `npm install`
-2. Inicie o ambiente de desenvolvimento:
-	 - `npm run dev`
-3. Abra a URL exibida no terminal.
+1. Configure o pipeline para usar `Nuclei-Segmentation-AI-Front` como diretorio da aplicacao.
+2. Defina a variavel `VITE_API_BASE_URL` nas configuracoes do ambiente de build.
+3. Execute `npm run build` no pipeline.
+4. Publique o diretorio `dist/` gerado pelo Vite.
+5. Garanta que o backend permita requisicoes CORS do dominio publicado.
+6. Teste login, upload, imagem predefinida e downloads apos a publicacao.
 
-## Observacoes e limitacoes
+Nao coloque segredos nas variaveis `VITE_*`: elas ficam visiveis no JavaScript entregue ao navegador.
 
-- A lista de imagens e fixa; nao ha upload de arquivos no frontend.
-- O endereco da API esta fixo em `src/App.jsx`. Para ambientes diferentes, recomenda-se mover para variaveis de ambiente do Vite.
-- O campo `file` na lista de imagens nao e usado pelo frontend atualmente; o backend deve reconhecer o `image_name` enviado.
+## Diagnostico
 
-## Possiveis melhorias
+- `401`: token ausente, invalido ou expirado; faca login novamente.
+- Erro de rede: confira `VITE_API_BASE_URL`, disponibilidade do backend e CORS.
+- Upload rejeitado: confira extensao e limite de 50 MB.
+- Resultado sem imagem: verifique se as URLs retornadas pela API sao acessiveis pelo navegador.
+- Alteracao no `.env` sem efeito: reinicie o Vite, pois as variaveis sao lidas durante o build.
 
-- Substituir o base URL fixo por variavel `VITE_API_BASE_URL`.
-- Adicionar upload de arquivos do usuario.
-- Adicionar tratamento de erros mais detalhado (timeouts, mensagens por status HTTP).
-- Exibir a imagem original junto da segmentada para comparacao.
+## Seguranca
+
+- Nao commite `.env`.
+- Nao inclua senhas, tokens, connection strings ou chaves de API no frontend.
+- Considere o token salvo no navegador como dado sensivel.
+- Use HTTPS no frontend e no backend em producao.
+- Restrinja CORS ao dominio oficial do frontend.
